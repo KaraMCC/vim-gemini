@@ -23,7 +23,7 @@ Without modifiying any settings, vim-gemini should work automatically as soon as
 ### How do I define custom pairs for gemini to complete?
 Add this to your .vimrc, the first character is the one that you type to trigger the completion, and the second is the one that is added after.
 ```
-let g:gemini_match_list['<open>', '<close>']
+let g:gemini_match_list[['<open>', '<close>']]
 ```
 
 <br/>
@@ -33,7 +33,14 @@ The example below will automatically add a closing caret, when an opening caret 
              Character that's typed
                          |  Character that gets added
                          |    |
-let g:gemini_match_list['<', '>']
+let g:gemini_match_list[['<', '>']]
+```
+
+<br/>
+
+To define multiple pairs, simply add a comma between the pairs.
+```
+g:gemini_match_list[['<', '>'], ['(', ')']]
 ```
 
 <br/>
