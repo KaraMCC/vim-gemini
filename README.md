@@ -7,6 +7,7 @@ Simply type a character that vim-gemini is built to handle, and the plugin will 
 What is typed: ("|
 What appears ("|")
 ```
+
 ```
 What is typed: if(foo { <Enter>|
 What appears:
@@ -25,27 +26,41 @@ Add this to your .vimrc, the first character is the one that you type to trigger
 let g:gemini_match_list['<open>', '<close>']
 ```
 
-This example will add a '>', when '<' is typed, so '<', becomes '<>'
+<br/>
+
+The example below will automatically add a closing caret, when an opening caret is typed.
 ```
              Character that's typed
                          |  Character that gets added
                          |    |
 let g:gemini_match_list['<', '>']
 ```
+
 <br/>
 
 ### How do I define custom pairs that are filetype specific?
-Add this to your .vimrc (or init.vim)
+Add this to your .vimrc, replacing the words in carets with the ones you want.
 ```
-let g:gemini_filetype_match_list = {'c': [['&', '&']] }
+let g:gemini_filetype_match_list = {'<filetype>': [['<open>', '<close>']] }
 ```
-The example above will automatically pair '&' and '&', but only when editing a C file.
+
+The example below will automatically pair "{" and "}" but only when editing a C file.
+```
+let g:gemini_filetype_match_list = {'c': [['{', '}']] }
+```
 
 <br/>
 
-This example will automatically pair '(', and ')', but only when editing a python file, and automatically pair '<', and '>', but only when editing an HTML file.
+This example will automatically pair "(" and ")" but only when editing a python file, and automatically pair "<", and ">", but only when editing an HTML file.
 ```
-let g:gemini_filetype_match_list = {'python': [['(', ')']], 'html': [['<', '>']]}
+let g:gemini_filetype_match_list = {'python': [['(', ')']], 'html': [['<', '>']] }
+```
+
+<br/>
+
+And finally this example will pair "{", "}", and "(", ")" but only when editing a C++ file.
+```
+let g:gemini_filetype_match_list = {'cpp': [['{', '}'], ['(', ')']] }
 ```
 
 <br/>
