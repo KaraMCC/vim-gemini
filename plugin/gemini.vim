@@ -14,7 +14,7 @@ endfunction
 
 function! s:CreateMatchList()
     " Define basic matches
-    let b:match_chars = [['(', ')'], ['{', '}'], ['[', ']'], ["'", "'"]]
+    let b:match_chars = [['(', ')'], ['{', '}'], ['[', ']']]
     " Add user-defined matches
     let b:match_chars += get(g:, 'gemini_match_list', [])
 
