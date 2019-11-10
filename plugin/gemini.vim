@@ -3,64 +3,61 @@ if exists('g:loaded_gemini_plugin')
 endif
 let g:loaded_gemini_plugin = 1
 
-function! s:Init()
-    call s:CreateMatchList()
-    augroup init
-        autocmd!
-        autocmd BufEnter * call <SID>CreateMatchList()
-    augroup END
-    inoremap <expr><BS> <SID>TryDeletePair()
-endfunction
+" Define default matches
+let g:gemini#default_matches = {
+            \'.*': [['(', ')'], ['{', '}'], ['[', ']'], ['"', '"']],
+            \'python\|php\|c\|cpp\|cs\|.*html\|xml\|vim\|perl\|rust\|java\|javascript': [["'", "'"]],
+            \'.*html\|xml': [['<', '>']],
+            \'r\|go\|sh\|javascript': [['`', '`']],
+            \}
+" Get user settings
+let g:gemini#match_list = get(g:, 'gemini#match_list', {})
+let g:gemini#match_in_comment = get(g:, 'gemini#match_in_comment', 0)
+let g:gemini#cozy_matching = get(g:, 'gemini#cozy_matching', 1)
+
+augroup create_gemini_mappings
+    autocmd!
+    autocmd BufEnter * call <SID>CreateMappings()
+augroup END
 
 function! s:CreateMatchList()
-    " Define basic matches
-    let b:match_chars = [['(', ')'], ['{', '}'], ['[', ']']]
-    " Add user-defined matches
-    let b:match_chars += get(g:, 'gemini_match_list', [])
-
-    " Check if filetype dictionary has the current filetype, if so,
-    " add the match specified to the list
-    if has_key(get(g:, 'gemini_filetype_match_list', {}), &filetype)
-        let b:match_chars += g:gemini_filetype_match_list[&filetype]
-    endif
-
-    if &filetype !=? 'vim'
-        let b:match_chars += [['"', '"']]
-    endif
-    if &filetype =~? '.*html'
-        let b:match_chars += [['<', '>']]
-    endif
-    call s:CreateMappings()
+    let b:match_chars = []
+    let l:potential_matches = extend(g:gemini#default_matches, g:gemini#match_list)
+    " Loop through all potential matches, and add them if the regex matches
+    for key in keys(l:potential_matches)
+        if &filetype =~? key
+            let b:match_chars += l:potential_matches[key]
+        endif
+    endfor
 endfunction
 
 function! s:CreateMappings()
+    if !exists('b:match_chars')
+        call s:CreateMatchList()
+    endif
+    " Loop through characters to match
     for matches in b:match_chars
         if matches[0] !=# matches[1]
-            execute printf('inoremap <buffer><expr>%s <SID>TryClosePair("\%s","\%s")', matches[0], matches[0], matches[1])
-            execute printf('inoremap <buffer><expr>%s <SID>OnClosingCharacter("\%s")', matches[1], matches[1])
+            exec printf('inoremap <buffer><expr>%s <SID>OnOpeningCharacter("\%s","\%s")', matches[0], matches[0], matches[1])
+            exec printf('inoremap <buffer><expr>%s <SID>OnClosingCharacter("\%s")', matches[1], matches[1])
         else
-            execute printf('inoremap <buffer><expr>%s <SID>TryCloseDuplicatePair("\%s")', matches[0], matches[1])
+            " A different function is required if the opening and closing char are the same
+            exec printf('inoremap <buffer><expr>%s <SID>OnTypedDuplicate("\%s")', matches[0], matches[1])
         endif
     endfor
+    inoremap <expr><BS> <SID>TryDeletePair()
 endfunction
 
-function! s:TryClosePair(open, close)
-    " Append closing character if a:close doesn't appear before cursor,
-    " and line isn't commented
-    if stridx(getline('.'), a:close, col('.') - 1) == -1 && !s:IsComment()
-        return a:open . a:close . "\<left>"
+function! s:OnOpeningCharacter(open, close)
+    if g:gemini#match_in_comment || !s:IsComment()
+        " Check if a:open appears after cursor
+        if stridx(getline('.'), a:open, col('.') - 1) == -1
+            if g:gemini#cozy_matching || getline('.')[col('.') - 1] =~? '\s' || col('.') == col('$')
+                return a:open . a:close . "\<left>"
+            endif
+        endif
     endif
     return a:open
-endfunction
-
-function! s:TryDeletePair()
-    for chars in b:match_chars
-        " If the opening character is deleted, also delete the closing one
-        if getline('.')[col('.')-2] ==# chars[0] && getline('.')[col('.')-1] ==# chars[1]
-            return "\<right>" . "\<BS>" . "\<BS>"
-        endif
-    endfor
-    return "\<BS>"
 endfunction
 
 function! s:OnClosingCharacter(close)
@@ -72,22 +69,38 @@ function! s:OnClosingCharacter(close)
     endif
 endfunction
 
-function! s:TryCloseDuplicatePair(char)
-    " If the specified character is adjacent to the cursor, do not repeat
-    if stridx(getline('.'), a:char, col('.') - 2) == -1 && !s:IsComment()
-        " Don't close if only one of a:char exists on the line
-        if count(getline('.'), a:char) % 2 == 0
-            return repeat(a:char, 2) . "\<left>"
+function! s:OnTypedDuplicate(char)
+    " Don't repeat if in comment, unless user has enabled it
+    if g:gemini#cozy_matching || getline('.')[col('.') - 1] =~? '\s' || col('.') == col('$')
+        " If the specified character is adjacent to the cursor, do not repeat
+        if g:gemini#match_in_comment || !s:IsComment()
+            if stridx(getline('.'), a:char, col('.') - 2) == -1
+                " Don't close if an even number of a:char exists on the line
+                if count(getline('.'), a:char) % 2 == 0
+                    return repeat(a:char, 2) . "\<left>"
+                endif
+                " If cursor is already on the specified character, move right
+            elseif getline('.')[col('.') - 1] ==# a:char
+                return "\<right>"
+            endif
         endif
-    elseif getline('.')[col('.') - 1] ==# a:char
-        return "\<right>"
     endif
     return a:char
 endfunction
 
-" Return 1 if cursor is inside a commented section; 0 if not
+" If the opening character is deleted, also delete the closing one
+function! s:TryDeletePair()
+    for chars in b:match_chars
+        if getline('.')[col('.')-2] ==# chars[0] && getline('.')[col('.')-1] ==# chars[1]
+            return "\<right>\<BS>\<BS>"
+        endif
+    endfor
+    return "\<BS>"
+endfunction
+
 function! s:IsComment()
+    " Return 1 if the name of the syntax id under cursor is 'Comment'
     return synIDattr(synIDtrans(synID(line('.'), col('.') - 1, 1)), 'name') ==? 'Comment'
 endfunction
 
-call s:Init()
+call s:CreateMappings()
