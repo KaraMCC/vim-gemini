@@ -1,5 +1,8 @@
 # vim-gemini
-vim-gemini is a customizable vim plugin that automatically adds closing, parenthesis, brackets, quotes, and more!<br/>
+vim-gemini is a customizable vim plugin that automatically adds closing, parenthesis, brackets, quotes, and more!
+
+<br/>
+
 ![Gemini Gif](https://user-images.githubusercontent.com/56435971/68540940-42799300-0367-11ea-9389-cc77efafc4c2.gif)
 
 # How do I use it?
