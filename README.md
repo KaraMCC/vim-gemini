@@ -79,18 +79,18 @@ let g:gemini#cozy_matching = 0
 <br/>
 
 # Installation
-With [pathogen](https://github.com/tpope/vim-pathogen):
+#### With [pathogen](https://github.com/tpope/vim-pathogen):
 ```
 cd ~/.vim/bundle && \
 git clone https://github.com/KaraMCC/vim-gemini.git
 ```
 
-With [vim-plug](https://github.com/junegunn/vim-plug):
+#### With [vim-plug](https://github.com/junegunn/vim-plug):
 ```
 Plug 'KaraMCC/vim-gemini'
 ```
 
-With [Vundle](https://github.com/VundleVim/Vundle.vim):
+#### With [Vundle](https://github.com/VundleVim/Vundle.vim):
 ```
 Plugin 'KaraMCC/vim-gemini'
 ```
