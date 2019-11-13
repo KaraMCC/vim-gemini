@@ -6,7 +6,7 @@ let g:loaded_gemini_plugin = 1
 " Define default matches
 let g:gemini#default_matches = {
             \'.*': [['(', ')'], ['{', '}'], ['[', ']'], ['"', '"']],
-            \'python\|php\|c\|cpp\|cs\|.*html\|xml\|vim\|perl\|rust\|java\|javascript': [["'", "'"]],
+            \'.*python\|.*php\|.*c\|.*cpp\|.*cs\|.*sh\|.*html\|.*xml\|.*vim\|.*perl\|.*rust\|.*java\|.*javascript': [["'", "'"]],
             \'.*html\|xml': [['<', '>']],
             \'r\|go\|sh\|javascript': [['`', '`']],
             \}
