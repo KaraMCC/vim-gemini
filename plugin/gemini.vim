@@ -102,5 +102,3 @@ function! s:IsComment()
     " Return 1 if the name of the syntax id under cursor is 'Comment'
     return synIDattr(synIDtrans(synID(line('.'), col('.') - 1, 1)), 'name') ==? 'Comment'
 endfunction
-
-call s:CreateMappings()
