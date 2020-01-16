@@ -50,9 +50,15 @@ endfunction
 
 function! s:OnOpeningCharacter(open, close)
     if g:gemini#match_in_comment || !s:IsComment()
-        " Check if a:open appears after cursor
-        if stridx(getline('.'), a:open, col('.') - 1) == -1
+        " Get the string index of a:open, starting at the cursor's position
+        let l:open_idx = stridx(getline('.'), a:open, col('.') - 1)
+        " Do the same for a:close
+        let l:close_idx = stridx(getline('.'), a:close, col('.') - 1)
+        if l:open_idx == l:close_idx || l:open_idx < l:close_idx && l:open_idx != -1
+            " Only match if the cursor is next to whitespace --
+            " disregard if cozy matching is enabled
             if g:gemini#cozy_matching || getline('.')[col('.') - 1] =~? '\s' || col('.') == col('$')
+                " Add both the characters, then move the cursor to the left
                 return a:open . a:close . "\<left>"
             endif
         endif
