@@ -53,9 +53,9 @@ let g:gemini#match_list = {
 <br/>
 
 ### How do I change the default matches that Gemini uses?
-The plugin uses a list of default matches which can be edited by the user by modifying the global variable ```g:gemini#override_matches```. In the example below the default matches are changed such to allow only automatically adding curly brackets.
+The plugin uses a list of default matches which can be edited by the user by modifying the global variable ```g:gemini#override_matches```. In the example below, the default matches are changed so that only curly brackets will be matched.
 ```
-let g:gemini#default_matches = {
+let g:gemini#override_matches = {
             \'.*': [['{', '}']],
             \}
 ```
