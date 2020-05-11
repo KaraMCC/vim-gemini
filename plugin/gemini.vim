@@ -4,12 +4,15 @@ endif
 let g:loaded_gemini_plugin = 1
 
 " Define default matches
-let g:gemini#default_matches = {
+let s:default_matches = {
             \'.*': [['(', ')'], ['{', '}'], ['[', ']'], ['"', '"']],
             \'.*python\|.*php\|.*c\|.*cpp\|.*cs\|.*sh\|.*html\|.*xml\|.*vim\|.*perl\|.*rust\|.*java\|.*javascript': [["'", "'"]],
             \'.*html\|xml': [['<', '>']],
             \'r\|go\|sh\|javascript': [['`', '`']],
             \}
+" Allow user to override default matches
+let s:base_match_list = get(g:, 'gemini#override_matches', s:default_matches)
+
 " Get user settings
 let g:gemini#match_list = get(g:, 'gemini#match_list', {})
 let g:gemini#match_in_comment = get(g:, 'gemini#match_in_comment', 0)
@@ -22,7 +25,8 @@ augroup END
 
 function! s:CreateMatchList()
     let b:match_chars = []
-    let l:potential_matches = extend(g:gemini#default_matches, g:gemini#match_list)
+    " Get full list of potential matches by combining base matches and matches defined in user settings
+    let l:potential_matches = extend(s:base_match_list, g:gemini#match_list)
     " Loop through all potential matches, and add them if the regex matches
     for key in keys(l:potential_matches)
         if &filetype =~? key
